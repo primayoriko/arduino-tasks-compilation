@@ -8,7 +8,7 @@
 #define NOTE_E4 330
 #define NOTE_F4 349
 
-const int kPinSpeaker = 2;
+const int kPinSpeaker = 4;
 
 const int noteNum = 6;
 const int notes[noteNum] = {
@@ -35,7 +35,24 @@ void loop(){
 }
 
 void playTone(int freq, int duration){
-    // TODO : 
-    tone(kPinSpeaker, freq, duration);
-    delay(duration);
+  	long interval = 1000000 / (2 * freq);
+  	long endTime = millis() + duration;
+
+    while(millis() < endTime){
+        digitalWrite(kPinSpeaker, HIGH);
+        delayMicroseconds(interval);
+        digitalWrite(kPinSpeaker, LOW);
+        delayMicroseconds(interval);
+    }
 }
+
+// void playTone(int freq, int duration){
+//   	int interval = 1000000 / (2 * freq);
+//   	int num = duration * 1000 / interval;
+//     for(int i = 0; i < num; i++){
+//         digitalWrite(kPinSpeaker, HIGH);
+//         delayMicroseconds(interval);
+//         digitalWrite(kPinSpeaker, LOW);
+//         delayMicroseconds(interval);
+//     }
+// }

@@ -1,10 +1,10 @@
 /*
     13518146 - Naufal Prima Yoriko
-    EXERCISE 2.4 any pattern
+    EXERCISE 2.4 any pattern that different with 2.3
 */
 
-const int k_numLEDs = 4;
-const int kPinLed[k_numLEDs] = {2, 3, 4, 5};
+const int k_numLEDs = 3;
+const int kPinLed[k_numLEDs] = {3, 5, 7};
 
 void setup(){
     for(int i = 0; i < k_numLEDs; i++){
@@ -35,4 +35,3 @@ void loop(){
         delay(300);
     }
 }
-

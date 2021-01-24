@@ -3,7 +3,7 @@
     EXERCISE 2.1 change loop 4 -> 10
 */
 
-const int kPinLed = 2;
+const int kPinLed = 13;
 
 void setup(){
     pinMode(kPinLed, OUTPUT);
@@ -17,6 +17,5 @@ void loop(){
         digitalWrite(kPinLed, LOW);
         delay(200);
     }
-    delay((1000);
+    delay(1000);
 }
-

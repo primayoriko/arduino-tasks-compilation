@@ -9,9 +9,9 @@ const int kPinPot_R = A0;
 const int kPinPot_G = A1;
 const int kPinPot_B = A2;
 
-const int kPinLed_R = 2;
-const int kPinLed_G = 3;
-const int kPinLed_B = 4;
+const int kPinLed_R = 4;
+const int kPinLed_G = 2;
+const int kPinLed_B = 3;
 
 const int kPinBtnFrom = 7;
 const int kPinBtnTo = 8;
@@ -43,15 +43,11 @@ void loop(){
         from_R = analogRead(kPinPot_R);
         from_G = analogRead(kPinPot_G);
         from_B = analogRead(kPinPot_B);
-    }
-    if(digitalRead(kPinBtnTo) == LOW){
+    } else if(digitalRead(kPinBtnTo) == LOW){
         to_R = analogRead(kPinPot_R);
         to_G = analogRead(kPinPot_G);
         to_B = analogRead(kPinPot_B);
-    }
-
-    if(digitalRead(kPinBtnTo) == HIGH 
-        && digitalRead(kPinBtnTo) == HIGH){
+    } else {
         now += change;
         if(now > 255){
             now = 255;
@@ -73,4 +69,3 @@ void loop(){
         delay(5);
     }
 }
-

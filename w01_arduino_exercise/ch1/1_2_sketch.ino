@@ -1,6 +1,6 @@
 /*
     13518146 - Naufal Prima Yoriko
-    EXERCISE 1.3 change number 13 -> 2
+    EXERCISE 1.2 change number 13 -> 2
 */
 
 const int kPinLed = 2;
