@@ -1,13 +1,14 @@
 /*
     13518146 - Naufal Prima Yoriko
-    EXERCISE 3.2 change delay with pot value only when button pressed
+    EXERCISE 3.2 change interval with pot value only when button pressed
 */
 
-const int kMinDelay = 5;
-const int kMaxDelay = 1500;
-const int kPinLed = 2;
-const int kPinButton = 4;
 const int kPinPot = A0;
+const int kPinButton = 4;
+const int kPinLed = 10;
+
+const int kMininterval = 5;
+const int kMaxinterval = 1500;
 
 long lastTime;
 int ledState = LOW;
@@ -32,6 +33,5 @@ void loop(){
         lastTime = millis();
     }
 
-    delay(3); // give basic delay 3ms between loop
+    delay(3); // give basic interval 3ms between loop
 }
-

@@ -1,17 +1,17 @@
 /*
     13518146 - Naufal Prima Yoriko
-    EXERCISE 3.1 change delay with gas-brake button
+    EXERCISE 3.1 change interval with gas-brake button
 */
 
-const int kMinDelay = 10;
-const int kMaxDelay = 1500;
-const int kPinLed = 2;
+const int kMinInterval = 10;
+const int kMaxInterval = 1500;
 const int kPinBtnBrake = 4;
 const int kPinBtnGas = 5;
+const int kPinLed = 10;
 
 long lastTime;
-int delay = 200;
-int ledState = LOW;
+int interval = 200;
+auto ledState = LOW;
 
 void setup(){
     pinMode(kPinLed, OUTPUT);
@@ -26,20 +26,20 @@ void setup(){
 
 void loop(){
     if(digitalRead(kPinBtnBrake) == LOW){
-        delay--;
+        interval++;
     }
     if(digitalRead(kPinBtnGas) == LOW){
-        delay++;
+        interval--;
     }
 
-    delay = adjustValue(delay, kMinDelay, kMaxDelay);
-    if(millis() > lastTime + delay){
+    interval = adjustValue(interval, kMinInterval, kMaxInterval);
+    if(millis() > lastTime + interval){
         ledState = !ledState;
         digitalWrite(kPinLed, ledState);
         lastTime = millis();
     }
 
-    delay(3); // give basic delay 3ms between loop
+    delay(10); // give basic interval 3ms between loop
 }
 
 int adjustValue(int val, int mini, int maks){
@@ -51,4 +51,3 @@ int adjustValue(int val, int mini, int maks){
 
     return val;
 }
-
