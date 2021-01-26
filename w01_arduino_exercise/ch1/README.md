@@ -1,6 +1,6 @@
 # Chapter 1 - Getting Started
 
-Here is the question and circuit's board screenshot of my works
+Here are the questions and the circuit's board screenshots of my works in this chapter
 
 1. Change the amount of time the LED is off to 1 second. (Leaving the
 amount of time the LED is on at 1⁄2 second.)

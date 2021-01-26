@@ -1,6 +1,6 @@
 # Chapter 2 - Making Light Patterns
 
-Here is the question and circuit's board screenshot of my works
+Here are the questions and the circuit's board screenshots of my works in this chapter
 
 1. Modify the blink_for program in Section 2.7 to light the LED up 10 times
 in a row instead of 4.

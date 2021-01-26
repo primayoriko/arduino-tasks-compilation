@@ -1,6 +1,6 @@
 # Chapter 3 - Input
 
-Here is the question and circuit's board screenshot of my works
+Here are the questions and the circuit's board screenshots of my works in this chapter
 
 1. Make the two push buttons a “gas” and “brake” button. The “gas” button
 should speed up the blinking rate of the LED, and the “brake” button

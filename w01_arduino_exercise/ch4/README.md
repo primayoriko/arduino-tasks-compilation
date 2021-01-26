@@ -1,6 +1,6 @@
 # Chapter 4 - Sound
 
-Here is the question and circuit's board screenshot of my works
+Here are the questions and the circuit's board screenshots of my works in this chapter
 
 1. Make a sketch that plays the first line of “Happy Birthday” [C4 (1 beat), C4 (1 beat), D4 (2 beats), C4 (2 beats), F4 (2 beats), E4 (4
 beats)]
