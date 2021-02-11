@@ -46,8 +46,8 @@ void setup() {
 
     lcd.begin(16, 2);
 
+    Serial.setTimeout(3000);
     Serial.begin(9600);
-
 }
 
 void loop() {
