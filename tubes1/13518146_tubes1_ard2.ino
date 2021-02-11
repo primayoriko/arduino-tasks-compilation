@@ -9,8 +9,6 @@
     4. PIR Sensor
 */
 
-#include <LiquidCrystal.h>
-
 const int kPin_Motor = 11;
 const int kPin_PIR = 2;
 
@@ -52,6 +50,6 @@ void loop() {
     openDoor();
 }
 
-void OpenDoor(){
+void openDoor(){
 
 }

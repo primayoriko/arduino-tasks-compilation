@@ -30,7 +30,7 @@ const int kPin_D7 = 2;
 
 byte motorSpeed;
 byte substractCount;
-int peopleCnt;
+int peopleCount;
 bool isPersonCome;
 float tempC;
 
@@ -39,7 +39,7 @@ LiquidCrystal lcd(kPin_RS, kPin_Enable, kPin_D4,
             kPin_D5, kPin_D6, kPin_D7);
 
 void setup() {
-    peopleCnt = 0;
+    peopleCount = 0;
     isPersonCome = false;
 
     pinMode(kPin_PIR, INPUT);
@@ -60,11 +60,11 @@ void loop() {
     }
 
     /* Read of people change from ard2  */
-    x = Serial.read();
+    byte x = Serial.read();
 
     /* decrement / no change of people count  */
     if(x == 1){
-        peopleCnt--;
+        peopleCount--;
     }
 
     /* LCD Display
@@ -88,12 +88,12 @@ void loop() {
     /* Set motor DC speed */
     
     /* Move DC motor */
-    if(isPersonCome && peopleCnt < 10 && tempC <= 37.0){
+    if(isPersonCome && peopleCount < 10 && tempC <= 37.0){
       writeLCD();
 
       // Logic of opening door, need to be adjusted
       openDoor();
-      peopleCnt++;
+      peopleCount++;
       isPersonCome = false;
       
       writeLCD();
@@ -118,18 +118,18 @@ void ringAlarm(){
     noTone(kPin_Speaker);
 }
 
-void OpenDoor(){
+void openDoor(){
 
 }
 
-writeLCD(){
+void writeLCD(){
     lcd.setCursor(0, 0);
     if(!isPersonCome){
-        if(peopleCnt < 10 && tempC <= 37.0){
+        if(peopleCount < 10 && tempC <= 37.0){
             lcd.print("siap dibuka");
 
         }
-        else if (peopleCnt >= 10){
+        else if (peopleCount >= 10){
             lcd.print("penuh"); 
 
         } else if(tempC > 37.0){
