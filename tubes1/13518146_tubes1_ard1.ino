@@ -28,40 +28,76 @@ const int kPin_D5 = 4;
 const int kPin_D6 = 3;
 const int kPin_D7 = 2;
 
+byte motorSpeed;
+byte substractCount;
+int peopleCnt;
+bool isPersonCome;
+float tempC;
+
 // initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(kPin_RS, kPin_Enable, kPin_D4,
             kPin_D5, kPin_D6, kPin_D7);
 
 void setup() {
-  Serial.begin(9600);
-  lcd.begin(16, 2);
+    peopleCnt = 0;
+    isPersonCome = false;
+
+    pinMode(kPin_PIR, INPUT);
+
+    lcd.begin(16, 2);
+
+    Serial.begin(9600);
+
 }
 
 void loop() {
     /* Read Temp Sensor */
+    tempC = getTemperatureC();
+
     /* Beep alarm temp > 37 */
-    /* Read Kinetic Sensor */
+    if(tempC > 37.0){
+        ringAlarm();
+    }
+
     /* Read of people change from ard2  */
+    x = Serial.read();
+
     /* decrement / no change of people count  */
+    if(x == 1){
+        peopleCnt--;
+    }
+
     /* LCD Display
         lagi dibuka: tidak siap dibuka -> people ++
         people < 10 && temp <= 7  : Siap dibuka
         (people => 10): penuh
     */
+    writeLCD();
+
+    /* Read Motion Sensor */
+    if(digitalRead(kPin_PIR) == HIGH){
+        isPersonCome = true;
+    }
+
     /* Read potentiometer */
+    motorSpeed = analogRead(kPin_Potentiometer);
+
     /* Send potentiometer data to ard1 */
+    Serial.write(motorSpeed);
+
     /* Set motor DC speed */
+    
     /* Move DC motor */
+    if(isPersonCome && peopleCnt < 10 && tempC <= 37.0){
+      writeLCD();
 
-//   float temperatureC = getTemperatureC();
-//   float temperatureF = convertToF(temperatureC);
-
-//   lcd.setCursor(0, 0);
-//   lcd.print(temperatureC);
-//   lcd.print(" C");
-//   lcd.setCursor(0, 1);
-//   lcd.print(temperatureF);
-//   lcd.print(" F");
+      // Logic of opening door, need to be adjusted
+      openDoor();
+      peopleCnt++;
+      isPersonCome = false;
+      
+      writeLCD();
+    }
 
 //   delay(250);
 }
@@ -74,6 +110,33 @@ float getTemperatureC(){
     return (voltage - 5.0) * 100;
 }
 
-float convertToF(float tempC){
-    return (tempC * 9.0 / 5.0) + 32.0;
+void ringAlarm(){
+    for(int i = 450; i < 5000; i = i * 2){
+        tone(kPin_Speaker, 450);
+        delay(10);
+    }
+    noTone(kPin_Speaker);
+}
+
+void OpenDoor(){
+
+}
+
+writeLCD(){
+    lcd.setCursor(0, 0);
+    if(!isPersonCome){
+        if(peopleCnt < 10 && tempC <= 37.0){
+            lcd.print("siap dibuka");
+
+        }
+        else if (peopleCnt >= 10){
+            lcd.print("penuh"); 
+
+        } else if(tempC > 37.0){
+            // Perlu message??
+        }
+    } else {
+        lcd.print("tidak siap dibuka");
+
+    }
 }

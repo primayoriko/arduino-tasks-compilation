@@ -14,26 +14,41 @@
 const int kPin_Motor = 11;
 const int kPin_PIR = 2;
 
-const int kPin_RS = 12;
-const int kPin_Enable = 11;
-const int kPin_D4 = 5;
-const int kPin_D5 = 4;
-const int kPin_D6 = 3;
-const int kPin_D7 = 2;
-
-// initialize the library with the numbers of the interface pins
-LiquidCrystal lcd(kPin_RS, kPin_Enable, kPin_D4,
-            kPin_D5, kPin_D6, kPin_D7);
+byte motorSpeed;
+byte substractCount;
 
 void setup() {
+  motorSpeed = 100;
+
   Serial.begin(9600);
-  lcd.begin(16, 2);
 }
 
 void loop() {
+    /* Read Motion Sensor */
+    if(){
+
+    }
+
     /* Read of potentiometer data from ard1  */
+    int lastMotorSpeed = motorSpeed;
+
+    motorSpeed = Serial.read();
+    if(motorSpeed == -1){
+      motorSpeed = lastMotorSpeed;
+    }
+    
     /* Set motor DC speed */
-    /* Read Kinetic Sensor */
+    
     /* send data to ard1 (set true if change detected)  */
+    if(){
+      Serial.write(substractCount);
+      substractCount = 0;
+    }
+    
     /* Move DC motor */
+    openDoor();
+}
+
+void OpenDoor(){
+
 }
