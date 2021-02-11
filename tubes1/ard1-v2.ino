@@ -21,7 +21,6 @@ const int kPin_Speaker = 7;
 const int kPin_Motor = 9;
 const int kPin_PIR = 8;
 
-/* LCD Pins */
 const int kPin_RS = 12;
 const int kPin_Enable = 11;
 const int kPin_D4 = 5;
@@ -29,11 +28,10 @@ const int kPin_D5 = 4;
 const int kPin_D6 = 3;
 const int kPin_D7 = 2;
 
-/* Global vars */
-bool isOpened;
 byte motorSpeed;
-int peopleCount;
 byte substractCount;
+int peopleCount;
+bool isPersonCome;
 float tempC;
 
 // initialize the library with the numbers of the interface pins
@@ -42,7 +40,7 @@ LiquidCrystal lcd(kPin_RS, kPin_Enable, kPin_D4,
 
 void setup() {
 	peopleCount = 0;
-	isOpened = false;
+	isPersonCome = false;
 
 	pinMode(kPin_PIR, INPUT);
 	pinMode(kPin_Motor, OUTPUT);
@@ -54,57 +52,53 @@ void setup() {
 }
 
 void loop() {
-	// /* Read of people change from ard2  */
-	// byte x = Serial.read();
+	/* Read Temp Sensor */
+	tempC = getTemperatureC();
 
-	// /* decrement / no change of people count  */
-	// if(x == 1){
-	// 	peopleCount--;
-	// }
-
-	/* Check if there is person in PIR range */
-	if(digitalRead(kPin_PIR) == HIGH){
-
-		/* Read Temp Sensor */
-		tempC = getTemperatureC();
-
-		/* Beep alarm temp > 37 */
-		if(tempC > 37.0){
-			ringAlarm();
-		}
-
-		/* Read potentiometer */
-		motorSpeed = getMotorSpeed();
-
-		/* Send potentiometer data to ard1 */
-		Serial.write(motorSpeed);
-
-		/* Condition where people enter the PIR zone for first time */
-		writeLCD();
-
-		if(!isOpened){
-
-			/* Open the door */
-			isOpened = true;
-
-			moveDoor(true);
-
-		}
-
-	} else if(isOpened) { /* Condition where people already enter the room / left PIR zone */
-
-		moveDoor(false);
-
-		isOpened = false;
-		peopleCount++;
-
-		writeLCD();
-
-	} else {	
-		writeLCD();
-
+	/* Beep alarm temp > 37 */
+	if(tempC > 37.0){
+		ringAlarm();
 	}
 
+	/* Read of people change from ard2  */
+	byte x = Serial.read();
+
+	/* decrement / no change of people count  */
+	if(x == 1){
+		peopleCount--;
+	}
+
+	/* LCD Display
+		lagi dibuka: tidak siap dibuka -> people ++
+		people < 10 && temp <= 7  : Siap dibuka
+		(people => 10): penuh
+	*/
+	writeLCD();
+
+	/* Read Motion Sensor */
+	if(digitalRead(kPin_PIR) == HIGH){
+		isPersonCome = true;
+	}
+
+	/* Read potentiometer */
+	motorSpeed = analogRead(kPin_Potentiometer);
+
+	/* Send potentiometer data to ard1 */
+	Serial.write(motorSpeed);
+
+	/* Move DC motor */
+	if(isPersonCome && peopleCount < 10 && tempC <= 37.0){
+		writeLCD();
+
+		// Logic of opening door, need to be adjusted
+		moveDoor();
+		peopleCount++;
+		isPersonCome = false;
+		
+		writeLCD();
+	}
+
+//   delay(250);
 }
 
 float getTemperatureC(){
@@ -125,34 +119,31 @@ void ringAlarm(){
 	noTone(kPin_Speaker);
 }
 
-void moveDoor(bool moveForward){
-	/* Control door move direction */
-	int direction = 1;
-	if(!moveForward){
-		direction = -1;
-	}
-
-  for(int cnt = 0 ; cnt <= 10; cnt++){
-    analogWrite(kPin_Motor, direction * int(motorSpeed)); 
+void moveDoor(){
+	// open the door
+  for(int cnt = 0 ; cnt <= 200; cnt++){
+    analogWrite(kPin_Motor, int(motorSpeed)); 
     delay(5);      
   }
 
+  delay(3000);
+
+	// close the door
+  for(int cnt = 0 ; cnt <= 200; cnt++){
+    analogWrite(kPin_Motor, -1 * int(motorSpeed)); 
+    delay(5);      
+  }
 }
 
-/* LCD Display
-	lagi dibuka: tidak siap dibuka -> people ++
-	people < 10 && temp <= 7  : Siap dibuka
-	(people => 10): penuh
-*/
 void writeLCD(){
     lcd.setCursor(0, 0);
-    if(!isOpened){
+    if(!isPersonCome){
         if(peopleCount < 10 && tempC <= 37.0){
-            lcd.print("siap dibuka    ");
+            lcd.print("siap dibuka");
 
         }
         else if (peopleCount >= 10){
-            lcd.print("penuh        "); 
+            lcd.print("penuh"); 
 
         } else if(tempC > 37.0){
             // Perlu message??
@@ -161,9 +152,5 @@ void writeLCD(){
         lcd.print("tidak siap dibuka");
 
     }
-    lcd.setCursor(0, 1);
-		lcd.print("cnt: ");
-		lcd.print(peopleCount);
-		lcd.print("/10 ");
     lcd.setCursor(0, 0);
 }
