@@ -20,36 +20,48 @@ void setup() {
   motorSpeed = 100;
   substractCount = 0;
 
+  pinMode(kPin_PIR, INPUT);
+  pinMode(kPin_Motor, OUTPUT);
+
   Serial.setTimeout(3000);
   Serial.begin(9600);
 }
 
 void loop() {
-    /* Read Motion Sensor */
-    /* send data to ard1 (set true if change detected)  */
-    if(digitalRead(kPin_PIR) == HIGH){
-      substractCount = 1;
-      Serial.write(substractCount);
-      substractCount = 0;
-    }
+  /* Read Motion Sensor */
+  /* send data to ard1 (set true if change detected)  */
+  if(digitalRead(kPin_PIR) == HIGH){
+    substractCount = 1;
+    Serial.write(substractCount);
+    substractCount = 0;
+  }
 
-    /* Read of potentiometer data from ard1  */
-    int lastMotorSpeed = motorSpeed;
+  /* Read of potentiometer data from ard1  */
+  int lastMotorSpeed = motorSpeed;
 
-    motorSpeed = Serial.read();
+  motorSpeed = Serial.read();
 
-    // Turn it back to initial value if no data received
-    if(motorSpeed == -1){
-      motorSpeed = lastMotorSpeed;
-    }
-    
-    /* Set motor DC speed */
-
-    
-    /* Move DC motor */
-    openDoor();
+  // Turn it back to initial value if no data received
+  if(motorSpeed == -1){
+    motorSpeed = lastMotorSpeed;
+  }
+  
+  /* Move DC motor */
+  moveDoor();
 }
 
-void openDoor(){
+void moveDoor(){
+	// open the door
+  for(int cnt = 0 ; cnt <= 200; cnt++){
+    analogWrite(kPin_Motor, int(motorSpeed)); 
+    delay(5);      
+  }
 
+  delay(3000);
+
+	// close the door
+  for(int cnt = 0 ; cnt <= 200; cnt++){
+    analogWrite(kPin_Motor, -1 * int(motorSpeed)); 
+    delay(5);      
+  }
 }
