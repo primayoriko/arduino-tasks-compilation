@@ -51,7 +51,7 @@ int cnt = 0;
 
 void loop() {
     float voltage = getVoltage();
-    float temperatureC = getTemperatureC(voltage);
+    float temperatureC = getTemperatureC();
     float temperatureF = convertToF(temperatureC);
 
     // Using equality sign to show time of nearest value
@@ -92,13 +92,11 @@ void loop() {
 }
 
 float getVoltage(){
-    int reading = analogRead(kPinTemp);
-
-    return (reading * 5.0) / 1024;
+    return (analogRead(kPinTemp) * 5.0)/1024;
 }
 
-float getTemperatureC(float voltage){
-    return (voltage - 5.0) * 100;
+float getTemperatureC(){
+    return map(((analogRead(kPinTemp) - 20) * 3.04), 0, 1023, -40, 125);
 }
 
 float convertToF(float tempC){

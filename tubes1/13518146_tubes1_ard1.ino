@@ -66,68 +66,71 @@ void setup() {
 
 void loop() {
 	/* Read of people change from ard2  */
-	byte x = Serial.read();
+	byte x = 0;
+	while(Serial.available()){
+		x = Serial.read();
+
+	}
 
 	/* decrement / no change of people count  */
 	if(x == 1){
 		peopleCount--;
 
-	}
-
+	} 
 	/* Read Temp Sensor */
 	tempC = getTemperatureC();
 
 	/* Read potentiometer */
 	motorSpeed = getMotorSpeed();
+	// Serial.print(getMotorSpeed());
+  // Serial.print("\n");
 
 	/* Send potentiometer data to ard1 */
 	Serial.write(motorSpeed);
 
 	/* Beep alarm temp > 37 */
-	if(tempC > maxTemperatureThreshold){
+	bool isDangerTemp = tempC > maxTemperatureThreshold;
+	
+	ringAlarm(isDangerTemp);
 
-		ringAlarm();
+	if(isOpened && isDangerTemp){
 
-		if(isOpened){
+		/* Close the door */
+		isOpened = false;
 
-			/* Close the door */
-			isOpened = false;
+		writeLCD();
 
-			writeLCD();
+		moveDoor(isOpened);
 
-			moveDoor(isOpened);
+	}
 
-		}
+	/* Check if there is person come by ultrasonic sensor */
+	distance = readDistanceInCM(kPin_Ultrasonic, kPin_Ultrasonic);
+	
+	if(distance >= minDistanceThreshold && distance <= maxDistanceThreshold){
+		isCome = true;
+	}
 
-	} else {
+	/* Person come and the door just want to be opened */
+	if(isCome && !isOpened && peopleCount < maxPeopleThreshold){
 
-		/* Check if there is person come by ultrasonic sensor */
-		distance = readDistanceInCM(kPin_Ultrasonic, kPin_Ultrasonic);
-		if(distance >= minDistanceThreshold && distance <= maxDistanceThreshold){
-			isCome = true;
-		}
+		/* Open the door */
+		isOpened = true;
+		writeLCD();
 
-		/* Person come and the door just want to be opened */
-		if(isCome && !isOpened && peopleCount < maxPeopleThreshold){
+		moveDoor(isOpened);
 
-			/* Open the door */
-			isOpened = true;
-			writeLCD();
+	}
+	
+	if(digitalRead(kPin_PIR) == HIGH && isOpened) { /* Condition where people already enter the room / enter PIR zone */
 
-			moveDoor(isOpened);
+		isOpened = false;
+		isCome = false;
 
-		}
-		
-		if(digitalRead(kPin_PIR) == HIGH && isOpened) { /* Condition where people already enter the room / enter PIR zone */
+		moveDoor(isOpened);
 
-			isOpened = false;
-			isCome = false;
+		peopleCount++;
 
-			moveDoor(isOpened);
-
-			peopleCount++;
-
-		}
 	}
 
 	writeLCD();
@@ -139,17 +142,18 @@ float getTemperatureC(){
 }
 
 float getMotorSpeed(){
-	return map(analogRead(kPin_PIR), 0, 1023, 30, 250);
+	return map(analogRead(kPin_Potentiometer), 0, 1023, 30, 250);
 }
 
 // Try to change to non-blocking
-void ringAlarm(){
-	for(int i = 450; i < 15000; i = i * 2 - i / 2){
-		tone(kPin_Speaker, 450);
-		delay(35);
-	}
-	delay(1000);
+void ringAlarm(bool trigger){
 	noTone(kPin_Speaker);
+	if(trigger){
+		for(int i = 450; i < 5000; i = i * 2 - i / 2){
+			tone(kPin_Speaker, 450);
+			delay(35);
+		}
+	}
 }
 
 void moveDoor(bool moveForward){
@@ -160,7 +164,7 @@ void moveDoor(bool moveForward){
 	}
 
 	analogWrite(kPin_Motor, int(motorSpeed)); 
-  delay(2000);      
+  delay(300);      
 	analogWrite(kPin_Motor, 0); 
 
 }
@@ -173,18 +177,18 @@ void moveDoor(bool moveForward){
 void writeLCD(){
 	lcd.setCursor(0, 0);
 	if(!isOpened){
-			if(peopleCount < maxPeopleThreshold && tempC <= maxTemperatureThreshold){
-					lcd.print("siap dibuka       ");
+		if(peopleCount < maxPeopleThreshold && tempC <= maxTemperatureThreshold){
+			lcd.print("siap dibuka       ");
 
-			}
-			else if (peopleCount >= maxPeopleThreshold){
-					lcd.print("penuh          "); 
+		}
+		else if (peopleCount >= maxPeopleThreshold){
+			lcd.print("penuh          "); 
 
-			} else if(tempC > maxTemperatureThreshold){
-					// Perlu message??
-			}
+		} else if(tempC > maxTemperatureThreshold){
+			// Perlu message??
+		}
 	} else {
-			lcd.print("tidak siap dibuka");
+		lcd.print("tidak siap dibuka");
 
 	}
 	lcd.setCursor(0, 1);

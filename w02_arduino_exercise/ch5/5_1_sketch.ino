@@ -58,11 +58,7 @@ void loop() {
 }
 
 float getTemperatureC(){
-    int reading = analogRead(kPinTemp);
-
-    float voltage = (reading * 5.0) / 1024;
-
-    return (voltage - 5.0) * 100;
+    return map(((analogRead(kPinTemp) - 20) * 3.04), 0, 1023, -40, 125);
 }
 
 float convertToF(float tempC){

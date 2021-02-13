@@ -7,9 +7,10 @@
 const int kPin_Photocell = A0;    
 const int kPin_LED = 9;        
 
+const int sensorMin = 0;        
+const int sensorMax = 1023;
+
 int sensorValue = 0;
-const int sensorMin = 1023;        
-const int sensorMax = 0;
 
 void setup() {
   pinMode(kPin_LED, OUTPUT);
