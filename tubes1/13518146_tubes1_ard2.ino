@@ -49,8 +49,8 @@ void loop() {
 
   while(Serial.available()){
 		motorSpeed = Serial.read();
-    Serial.print(motorSpeed);
-    Serial.print("\n");
+    // Serial.print(motorSpeed);
+    // Serial.print("\n");
 	}
 
   // Turn it back to initial value if no data received

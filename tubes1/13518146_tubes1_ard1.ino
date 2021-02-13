@@ -69,6 +69,7 @@ void loop() {
 	byte x = 0;
 	while(Serial.available()){
 		x = Serial.read();
+		// Serial.print(x);
 
 	}
 
@@ -107,7 +108,7 @@ void loop() {
 	/* Check if there is person come by ultrasonic sensor */
 	distance = readDistanceInCM(kPin_Ultrasonic, kPin_Ultrasonic);
 	
-	if(distance >= minDistanceThreshold && distance <= maxDistanceThreshold){
+	if(distance >= minDistanceThreshold && distance <= maxDistanceThreshold && peopleCount < maxPeopleThreshold){
 		isCome = true;
 	}
 
@@ -182,7 +183,7 @@ void writeLCD(){
 
 		}
 		else if (peopleCount >= maxPeopleThreshold){
-			lcd.print("penuh          "); 
+			lcd.print("penuh            "); 
 
 		} else if(tempC > maxTemperatureThreshold){
 			// Perlu message??
@@ -192,6 +193,7 @@ void writeLCD(){
 
 	}
 	lcd.setCursor(0, 1);
+	// lcd.print(byte(getMotorSpeed()));
 	lcd.print("cnt: ");
 	lcd.print(peopleCount);
 	lcd.print("/10 ");
