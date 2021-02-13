@@ -16,7 +16,7 @@
 
 #include <LiquidCrystal.h>
 
-const int kPin_Temp = A0;
+const int kPin_Temp36 = A0;
 const int kPin_Potentiometer = A5;
 const int kPin_Speaker = 7;
 const int kPin_Motor = 9;
@@ -30,6 +30,12 @@ const int kPin_D4 = 5;
 const int kPin_D5 = 4;
 const int kPin_D6 = 3;
 const int kPin_D7 = 2;
+
+/* Needed Const */
+const long minDistanceThreshold = 40;
+const long maxDistanceThreshold = 190;
+const int maxPeopleThreshold = 10;
+const float maxTemperatureThreshold = 37.0;
 
 /* Global vars */
 int distance;
@@ -65,6 +71,7 @@ void loop() {
 	/* decrement / no change of people count  */
 	if(x == 1){
 		peopleCount--;
+
 	}
 
 	/* Read Temp Sensor */
@@ -77,7 +84,7 @@ void loop() {
 	Serial.write(motorSpeed);
 
 	/* Beep alarm temp > 37 */
-	if(tempC > 37.0){
+	if(tempC > maxTemperatureThreshold){
 
 		ringAlarm();
 
@@ -85,6 +92,7 @@ void loop() {
 
 			/* Close the door */
 			isOpened = false;
+
 			writeLCD();
 
 			moveDoor(isOpened);
@@ -95,12 +103,12 @@ void loop() {
 
 		/* Check if there is person come by ultrasonic sensor */
 		distance = readDistanceInCM(kPin_Ultrasonic, kPin_Ultrasonic);
-		if(distance > 40 && distance < 190){
+		if(distance >= minDistanceThreshold && distance <= maxDistanceThreshold){
 			isCome = true;
 		}
 
 		/* Person come and the door just want to be opened */
-		if(isCome && !isOpened && peopleCount < 10){
+		if(isCome && !isOpened && peopleCount < maxPeopleThreshold){
 
 			/* Open the door */
 			isOpened = true;
@@ -127,7 +135,7 @@ void loop() {
 }
 
 float getTemperatureC(){
-	return map(((analogRead(kPin_Temp) - 20) * 3.04), 0, 1023, -40, 125);
+	return map(((analogRead(kPin_Temp36) - 20) * 3.04), 0, 1023, -40, 125);
 }
 
 float getMotorSpeed(){
@@ -165,14 +173,14 @@ void moveDoor(bool moveForward){
 void writeLCD(){
 	lcd.setCursor(0, 0);
 	if(!isOpened){
-			if(peopleCount < 10 && tempC <= 37.0){
+			if(peopleCount < maxPeopleThreshold && tempC <= maxTemperatureThreshold){
 					lcd.print("siap dibuka       ");
 
 			}
-			else if (peopleCount >= 10){
+			else if (peopleCount >= maxPeopleThreshold){
 					lcd.print("penuh          "); 
 
-			} else if(tempC > 37.0){
+			} else if(tempC > maxTemperatureThreshold){
 					// Perlu message??
 			}
 	} else {
@@ -188,14 +196,17 @@ void writeLCD(){
 
 long readDistanceInCM(int triggerPin, int echoPin)
 {
-  pinMode(triggerPin, OUTPUT);  // Clear the trigger
+	// Clear the trigger
+  pinMode(triggerPin, OUTPUT);  
   digitalWrite(triggerPin, LOW);
   delayMicroseconds(2);
+
   // Sets the trigger pin to HIGH state for 10 microseconds
   digitalWrite(triggerPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(triggerPin, LOW);
   pinMode(echoPin, INPUT);
+
   // Reads the echo pin, and returns the sound wave travel time in microseconds
   return 0.01723 * pulseIn(echoPin, HIGH);
 }

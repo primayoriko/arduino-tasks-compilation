@@ -13,13 +13,15 @@
 const int kPin_Motor = 11;
 const int kPin_PIR = 4;
 
+bool isOpened;
+bool isComeAndCounted;
 byte motorSpeed;
 byte substractCount;
-bool isPersonCome;
 
 void setup() {
   motorSpeed = 100;
   substractCount = 0;
+  isComeAndCounted = false;
 
   pinMode(kPin_PIR, INPUT);
   pinMode(kPin_Motor, OUTPUT);
@@ -30,25 +32,52 @@ void setup() {
 
 void loop() {
   /* Read Motion Sensor */
-  /* send data to ard1 (set true if change detected)  */
-  if(digitalRead(kPin_PIR) == HIGH){
+  if(digitalRead(kPin_PIR) == HIGH && !isComeAndCounted){
+
+    /* set to true if change detected */
     substractCount = 1;
-    Serial.write(substractCount);
-    substractCount = 0;
+    isComeAndCounted = true;
+    
+  } else if(digitalRead(kPin_PIR) == LOW){
+
+    isComeAndCounted = false;
+
   }
 
-  /* Read of potentiometer data from ard1  */
-  int lastMotorSpeed = motorSpeed;
+  /* send data to ard1  */
+  Serial.write(substractCount);
+  substractCount = 0;
 
-  motorSpeed = Serial.read();
+  if(!isOpened){
+    if (isComeAndCounted){
 
-  // Turn it back to initial value if no data received
-  if(motorSpeed == -1){
-    motorSpeed = lastMotorSpeed;
-  }
+      /* Read of potentiometer data from ard1  */
+      int lastMotorSpeed = motorSpeed;
+
+      motorSpeed = Serial.read();
+
+      // Turn it back to initial value if no data received
+      if(motorSpeed == -1){
+        motorSpeed = lastMotorSpeed;
+      }
+      
+      /* Move DC motor */
+      isOpened = true;
+
+      moveDoor(isOpened);
+
+    } 
+
+  } else if(!isComeAndCounted) {
+
+    /* Move DC motor */
+    isOpened = false;
+    isComeAndCounted = false;
+
+    moveDoor(isOpened);
   
-  /* Move DC motor */
-  moveDoor();
+  }
+
 }
 
 void moveDoor(bool moveForward){
@@ -66,14 +95,17 @@ void moveDoor(bool moveForward){
 
 long readDistanceInCM(int triggerPin, int echoPin)
 {
-  pinMode(triggerPin, OUTPUT);  // Clear the trigger
+	// Clear the trigger
+  pinMode(triggerPin, OUTPUT);  
   digitalWrite(triggerPin, LOW);
   delayMicroseconds(2);
+
   // Sets the trigger pin to HIGH state for 10 microseconds
   digitalWrite(triggerPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(triggerPin, LOW);
   pinMode(echoPin, INPUT);
+
   // Reads the echo pin, and returns the sound wave travel time in microseconds
   return 0.01723 * pulseIn(echoPin, HIGH);
 }
