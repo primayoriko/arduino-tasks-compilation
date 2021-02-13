@@ -1,16 +1,17 @@
 /*
-    13518146 - Naufal Prima Yoriko
-    TUBES 1 - ARDUINO 2
+  13518146 - Naufal Prima Yoriko
+  TUBES 1 - ARDUINO 2
 
-    TOOLS:
-    1. Arduino
-    2. Breadboard
-    3. Motor DC
-    4. PIR Sensor
+  TOOLS:
+  1. Arduino
+  2. Breadboard
+  3. Motor DC
+  4. PIR Sensor
+	5. Ultrasonic Distance Sensor
 */
 
 const int kPin_Motor = 11;
-const int kPin_PIR = 2;
+const int kPin_PIR = 4;
 
 byte motorSpeed;
 byte substractCount;
@@ -50,18 +51,29 @@ void loop() {
   moveDoor();
 }
 
-void moveDoor(){
-	// open the door
-  for(int cnt = 0 ; cnt <= 200; cnt++){
-    analogWrite(kPin_Motor, int(motorSpeed)); 
-    delay(5);      
-  }
+void moveDoor(bool moveForward){
+	/* Control door move direction */
+	if(!moveForward){
+		// Some method
 
-  delay(3000);
+	}
 
-	// close the door
-  for(int cnt = 0 ; cnt <= 200; cnt++){
-    analogWrite(kPin_Motor, -1 * int(motorSpeed)); 
-    delay(5);      
-  }
+	analogWrite(kPin_Motor, int(motorSpeed)); 
+  delay(2000);      
+	analogWrite(kPin_Motor, 0); 
+
+}
+
+long readDistanceInCM(int triggerPin, int echoPin)
+{
+  pinMode(triggerPin, OUTPUT);  // Clear the trigger
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigger pin to HIGH state for 10 microseconds
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+  pinMode(echoPin, INPUT);
+  // Reads the echo pin, and returns the sound wave travel time in microseconds
+  return 0.01723 * pulseIn(echoPin, HIGH);
 }

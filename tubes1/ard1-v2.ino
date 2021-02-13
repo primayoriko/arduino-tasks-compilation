@@ -11,6 +11,7 @@
     6. Potentiometer
     7. Motor DC
     8. PIR Sensor
+	9. Ultrasonic Distance Sensor
 */
 
 #include <LiquidCrystal.h>
@@ -20,7 +21,9 @@ const int kPin_Potentiometer = A5;
 const int kPin_Speaker = 7;
 const int kPin_Motor = 9;
 const int kPin_PIR = 8;
+const int kPin_Ultrasonic = 13;
 
+/* LCD Pins */
 const int kPin_RS = 12;
 const int kPin_Enable = 11;
 const int kPin_D4 = 5;
@@ -28,10 +31,15 @@ const int kPin_D5 = 4;
 const int kPin_D6 = 3;
 const int kPin_D7 = 2;
 
+/* Global vars */
+int lastDistance;
+int currDistance;
+int distance;
+bool isOpened;
+bool isCome;
 byte motorSpeed;
-byte substractCount;
 int peopleCount;
-bool isPersonCome;
+byte substractCount;
 float tempC;
 
 // initialize the library with the numbers of the interface pins
@@ -40,7 +48,10 @@ LiquidCrystal lcd(kPin_RS, kPin_Enable, kPin_D4,
 
 void setup() {
 	peopleCount = 0;
-	isPersonCome = false;
+	isOpened = false;
+	isCome = false;
+	lastDistance = 336;
+	currDistance = 336;
 
 	pinMode(kPin_PIR, INPUT);
 	pinMode(kPin_Motor, OUTPUT);
@@ -52,6 +63,14 @@ void setup() {
 }
 
 void loop() {
+	// /* Read of people change from ard2  */
+	// byte x = Serial.read();
+
+	// /* decrement / no change of people count  */
+	// if(x == 1){
+	// 	peopleCount--;
+	// }
+
 	/* Read Temp Sensor */
 	tempC = getTemperatureC();
 
@@ -60,45 +79,42 @@ void loop() {
 		ringAlarm();
 	}
 
-	/* Read of people change from ard2  */
-	byte x = Serial.read();
-
-	/* decrement / no change of people count  */
-	if(x == 1){
-		peopleCount--;
-	}
-
-	/* LCD Display
-		lagi dibuka: tidak siap dibuka -> people ++
-		people < 10 && temp <= 7  : Siap dibuka
-		(people => 10): penuh
-	*/
-	writeLCD();
-
-	/* Read Motion Sensor */
-	if(digitalRead(kPin_PIR) == HIGH){
-		isPersonCome = true;
-	}
-
 	/* Read potentiometer */
-	motorSpeed = analogRead(kPin_Potentiometer);
+	motorSpeed = getMotorSpeed();
 
 	/* Send potentiometer data to ard1 */
-	Serial.write(motorSpeed);
+	// Serial.write(motorSpeed);
 
-	/* Move DC motor */
-	if(isPersonCome && peopleCount < 10 && tempC <= 37.0){
-		writeLCD();
-
-		// Logic of opening door, need to be adjusted
-		moveDoor();
-		peopleCount++;
-		isPersonCome = false;
-		
-		writeLCD();
+	distance = readDistanceInCM(kPin_Ultrasonic, kPin_Ultrasonic);
+	if(distance > 40 && distance < 190){
+		isCome = true;
 	}
 
-//   delay(250);
+	/* Check if there is person in PIR range */
+	if(isCome && !isOpened && peopleCount < 10 && tempC <= 37.0){
+
+		/* Condition where people enter the PIR zone for first time */
+		/* Open the door */
+		isOpened = true;
+		writeLCD();
+
+		moveDoor(isOpened);
+
+	}
+	
+	if(digitalRead(kPin_PIR) == HIGH && isOpened) { /* Condition where people already enter the room / left PIR zone */
+
+		isOpened = false;
+		isCome = false;
+
+		moveDoor(isOpened);
+
+		peopleCount++;
+
+	}
+
+	writeLCD();
+
 }
 
 float getTemperatureC(){
@@ -119,43 +135,49 @@ void ringAlarm(){
 	noTone(kPin_Speaker);
 }
 
-void moveDoor(){
-	// open the door
-  for(int cnt = 0 ; cnt <= 200; cnt++){
-    analogWrite(kPin_Motor, int(motorSpeed)); 
-    delay(5);      
-  }
+void moveDoor(bool moveForward){
+	/* Control door move direction */
+	int direction = 1;
+	if(!moveForward){
+		direction = -1;
+	}
 
-  delay(3000);
+	analogWrite(kPin_Motor, direction * int(motorSpeed)); 
+  delay(2000);      
+	analogWrite(kPin_Motor, 0); 
 
-	// close the door
-  for(int cnt = 0 ; cnt <= 200; cnt++){
-    analogWrite(kPin_Motor, -1 * int(motorSpeed)); 
-    delay(5);      
-  }
 }
 
+/* LCD Display
+	lagi dibuka: tidak siap dibuka -> people ++
+	people < 10 && temp <= 7  : Siap dibuka
+	(people => 10): penuh
+*/
 void writeLCD(){
-    lcd.setCursor(0, 0);
-    if(!isPersonCome){
-        if(peopleCount < 10 && tempC <= 37.0){
-            lcd.print("siap dibuka");
+	lcd.setCursor(0, 0);
+	if(!isOpened){
+			if(peopleCount < 10 && tempC <= 37.0){
+					lcd.print("siap dibuka       ");
 
-        }
-        else if (peopleCount >= 10){
-            lcd.print("penuh"); 
+			}
+			else if (peopleCount >= 10){
+					lcd.print("penuh          "); 
 
-        } else if(tempC > 37.0){
-            // Perlu message??
-        }
-    } else {
-        lcd.print("tidak siap dibuka");
+			} else if(tempC > 37.0){
+					// Perlu message??
+			}
+	} else {
+			lcd.print("tidak siap dibuka");
 
-    }
-    lcd.setCursor(0, 0);
+	}
+	lcd.setCursor(0, 1);
+	lcd.print("cnt: ");
+	lcd.print(peopleCount);
+	lcd.print("/10 ");
+	lcd.setCursor(0, 0);
 }
 
-long readUltrasonicDistance(int triggerPin, int echoPin)
+long readDistanceInCM(int triggerPin, int echoPin)
 {
   pinMode(triggerPin, OUTPUT);  // Clear the trigger
   digitalWrite(triggerPin, LOW);
@@ -166,5 +188,5 @@ long readUltrasonicDistance(int triggerPin, int echoPin)
   digitalWrite(triggerPin, LOW);
   pinMode(echoPin, INPUT);
   // Reads the echo pin, and returns the sound wave travel time in microseconds
-  return pulseIn(echoPin, HIGH);
+  return 0.01723 * pulseIn(echoPin, HIGH);
 }

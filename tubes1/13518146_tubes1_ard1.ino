@@ -1,16 +1,16 @@
 /*
-    13518146 - Naufal Prima Yoriko
-    TUBES 1 - ARDUINO 1
+	13518146 - Naufal Prima Yoriko
+	TUBES 1 - ARDUINO 1
 
-    TOOLS:
-    1. Arduino
-    2. Breadboard
-    3. LCD 16x2
-    4. TMP36
-    5. Piezo
-    6. Potentiometer
-    7. Motor DC
-    8. PIR Sensor
+	TOOLS:
+	1. Arduino
+	2. Breadboard
+	3. LCD 16x2
+	4. TMP36
+	5. Piezo
+	6. Potentiometer
+	7. Motor DC
+	8. PIR Sensor
 	9. Ultrasonic Distance Sensor
 */
 
@@ -59,7 +59,7 @@ void setup() {
 }
 
 void loop() {
-	// /* Read of people change from ard2  */
+	/* Read of people change from ard2  */
 	byte x = Serial.read();
 
 	/* decrement / no change of people count  */
@@ -70,43 +70,56 @@ void loop() {
 	/* Read Temp Sensor */
 	tempC = getTemperatureC();
 
-	/* Beep alarm temp > 37 */
-	if(tempC > 37.0){
-		ringAlarm();
-	}
-
 	/* Read potentiometer */
 	motorSpeed = getMotorSpeed();
 
 	/* Send potentiometer data to ard1 */
 	Serial.write(motorSpeed);
 
-	distance = readDistanceInCM(kPin_Ultrasonic, kPin_Ultrasonic);
-	if(distance > 40 && distance < 190){
-		isCome = true;
-	}
+	/* Beep alarm temp > 37 */
+	if(tempC > 37.0){
 
-	/* Check if there is person in PIR range */
-	if(isCome && !isOpened && peopleCount < 10 && tempC <= 37.0){
+		ringAlarm();
 
-		/* Condition where people enter the PIR zone for first time */
-		/* Open the door */
-		isOpened = true;
-		writeLCD();
+		if(isOpened){
 
-		moveDoor(isOpened);
+			/* Close the door */
+			isOpened = false;
+			writeLCD();
 
-	}
-	
-	if(digitalRead(kPin_PIR) == HIGH && isOpened) { /* Condition where people already enter the room / left PIR zone */
+			moveDoor(isOpened);
 
-		isOpened = false;
-		isCome = false;
+		}
 
-		moveDoor(isOpened);
+	} else {
 
-		peopleCount++;
+		/* Check if there is person come by ultrasonic sensor */
+		distance = readDistanceInCM(kPin_Ultrasonic, kPin_Ultrasonic);
+		if(distance > 40 && distance < 190){
+			isCome = true;
+		}
 
+		/* Person come and the door just want to be opened */
+		if(isCome && !isOpened && peopleCount < 10){
+
+			/* Open the door */
+			isOpened = true;
+			writeLCD();
+
+			moveDoor(isOpened);
+
+		}
+		
+		if(digitalRead(kPin_PIR) == HIGH && isOpened) { /* Condition where people already enter the room / enter PIR zone */
+
+			isOpened = false;
+			isCome = false;
+
+			moveDoor(isOpened);
+
+			peopleCount++;
+
+		}
 	}
 
 	writeLCD();
