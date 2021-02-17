@@ -67,7 +67,7 @@ void loop() {
       /* Move DC motor */
       isOpened = true;
 
-      moveDoor(isOpened);
+      moveDoor(isOpened, motorSpeed);
 
     } 
 
@@ -77,16 +77,19 @@ void loop() {
     isOpened = false;
     isComeAndCounted = false;
 
-    moveDoor(isOpened);
+    moveDoor(isOpened, motorSpeed);
   
   }
 
 }
 
-void moveDoor(bool moveForward){
+void moveDoor(bool moveForward, int motorSpeed){
+	/* Set time based on speed */
+	int delayTime = 250 * 125 / (motorSpeed / 2);
+
 	/* Control door move direction */
 	if(!moveForward){
-		// Some method
+		// Some method if there is special mechanism of DC Motor when closing door
 
 	}
 

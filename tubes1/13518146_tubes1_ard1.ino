@@ -148,7 +148,7 @@ void loop() {
 }
 
 void setLEDLight(int brightness){
-	digitalWrite(kPin_LED, brightness);
+	analogWrite(kPin_LED, brightness);
 }
 
 float getTemperatureC(){
@@ -174,6 +174,9 @@ void ringAlarm(bool trigger){
 }
 
 void moveDoor(bool moveForward, int motorSpeed){
+	/* Set time based on speed */
+	int delayTime = 250 * 125 / (motorSpeed / 2);
+
 	/* Control door move direction */
 	if(!moveForward){
 		// Some method if there is special mechanism of DC Motor when closing door
@@ -188,7 +191,7 @@ void moveDoor(bool moveForward, int motorSpeed){
 
 /* LCD Display
 	lagi dibuka: tidak siap dibuka -> people ++
-	people < 10 && temp <= 7  : Siap dibuka
+	people < 10 && temp <= 37  : Siap dibuka
 	(people => 10): penuh
 */
 void writeLCD(){
