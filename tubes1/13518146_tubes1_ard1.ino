@@ -19,7 +19,7 @@
 
 const int kPin_Temp36 = A0;
 const int kPin_Potentiometer = A5;
-const int kPin_LED = 13;
+const int kPin_LED = 6;
 const int kPin_Speaker = 7;
 const int kPin_Motor = 9;
 const int kPin_PIR = 8;
@@ -83,8 +83,6 @@ void loop() {
 			peopleCount--;
 
 	} 
-	/* Read Temp Sensor */
-	tempC = getTemperatureC();
 
 	/* Read potentiometer */
 	motorSpeed = getMotorSpeed();
@@ -94,6 +92,9 @@ void loop() {
 
 	/* Send potentiometer data to ard1 */
 	Serial.write(motorSpeed);
+
+	/* Read Temp Sensor */
+	tempC = getTemperatureC();
 
 	/* Beep alarm temp > 37 */
 	bool isDangerTemp = tempC > maxTemperatureThreshold;
@@ -107,7 +108,7 @@ void loop() {
 
 		writeLCD();
 
-		moveDoor(isOpened);
+		moveDoor(isOpened, motorSpeed);
 
 	}
 
@@ -125,7 +126,7 @@ void loop() {
 		isOpened = true;
 		writeLCD();
 
-		moveDoor(isOpened);
+		moveDoor(isOpened, motorSpeed);
 
 	}
 	
@@ -136,7 +137,7 @@ void loop() {
 		isOpened = false;
 		isCome = false;
 
-		moveDoor(isOpened);
+		moveDoor(isOpened, motorSpeed);
 
 		peopleCount++;
 
@@ -147,7 +148,7 @@ void loop() {
 }
 
 void setLEDLight(int brightness){
-	analogWrite(kPin_LED, brightness);
+	digitalWrite(kPin_LED, brightness);
 }
 
 float getTemperatureC(){
@@ -166,10 +167,13 @@ void ringAlarm(bool trigger){
 			tone(kPin_Speaker, 450);
 			delay(35);
 		}
+
+		delay(250);
+		noTone(kPin_Speaker);
 	}
 }
 
-void moveDoor(bool moveForward){
+void moveDoor(bool moveForward, int motorSpeed){
 	/* Control door move direction */
 	if(!moveForward){
 		// Some method if there is special mechanism of DC Motor when closing door
@@ -205,10 +209,12 @@ void writeLCD(){
 
 	}
 	lcd.setCursor(0, 1);
-	// lcd.print(byte(getMotorSpeed()));
-	lcd.print("cnt: ");
+	lcd.print("cnt:");
 	lcd.print(peopleCount);
-	lcd.print("/10 ");
+	lcd.print("/10;");
+	lcd.print("T:");
+	lcd.print(tempC);
+	lcd.print("C  ");
 	lcd.setCursor(0, 0);
 }
 
