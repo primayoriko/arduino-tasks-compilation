@@ -12,12 +12,14 @@
 	7. Motor DC
 	8. PIR Sensor
 	9. Ultrasonic Distance Sensor
+	10. LED (addition for potentiometer indicator)
 */
 
 #include <LiquidCrystal.h>
 
 const int kPin_Temp36 = A0;
 const int kPin_Potentiometer = A5;
+const int kPin_LED = 13;
 const int kPin_Speaker = 7;
 const int kPin_Motor = 9;
 const int kPin_PIR = 8;
@@ -57,6 +59,7 @@ void setup() {
 
 	pinMode(kPin_PIR, INPUT);
 	pinMode(kPin_Motor, OUTPUT);
+	pinMode(kPin_LED, OUTPUT);
 
 	lcd.begin(16, 2);
 
@@ -69,13 +72,15 @@ void loop() {
 	byte x = 0;
 	while(Serial.available()){
 		x = Serial.read();
-		// Serial.print(x);
 
 	}
 
 	/* decrement / no change of people count  */
 	if(x == 1){
-		peopleCount--;
+
+		// Check to avoid negative
+		if(peopleCount > 0)
+			peopleCount--;
 
 	} 
 	/* Read Temp Sensor */
@@ -83,8 +88,9 @@ void loop() {
 
 	/* Read potentiometer */
 	motorSpeed = getMotorSpeed();
-	// Serial.print(getMotorSpeed());
-  // Serial.print("\n");
+
+	/* set LED Light to become indicator by it's brightness */
+	setLEDLight(motorSpeed);	
 
 	/* Send potentiometer data to ard1 */
 	Serial.write(motorSpeed);
@@ -123,8 +129,10 @@ void loop() {
 
 	}
 	
-	if(digitalRead(kPin_PIR) == HIGH && isOpened) { /* Condition where people already enter the room / enter PIR zone */
+	/* When person entering PIR zone and being sign of person entered successfully */
+	if(digitalRead(kPin_PIR) == HIGH && isOpened) {
 
+		/* Close the door mechanism */
 		isOpened = false;
 		isCome = false;
 
@@ -136,6 +144,10 @@ void loop() {
 
 	writeLCD();
 
+}
+
+void setLEDLight(int brightness){
+	analogWrite(kPin_LED, brightness);
 }
 
 float getTemperatureC(){
@@ -160,12 +172,12 @@ void ringAlarm(bool trigger){
 void moveDoor(bool moveForward){
 	/* Control door move direction */
 	if(!moveForward){
-		// Some method
+		// Some method if there is special mechanism of DC Motor when closing door
 
 	}
 
 	analogWrite(kPin_Motor, int(motorSpeed)); 
-  delay(300);      
+	delay(300);      
 	analogWrite(kPin_Motor, 0); 
 
 }
@@ -203,15 +215,15 @@ void writeLCD(){
 long readDistanceInCM(int triggerPin, int echoPin)
 {
 	// Clear the trigger
-  pinMode(triggerPin, OUTPUT);  
-  digitalWrite(triggerPin, LOW);
-  delayMicroseconds(2);
+	pinMode(triggerPin, OUTPUT);  
+	digitalWrite(triggerPin, LOW);
+	delayMicroseconds(2);
 
-  // Sets the trigger pin to HIGH state for 10 microseconds
-  digitalWrite(triggerPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(triggerPin, LOW);
-  pinMode(echoPin, INPUT);
+	// Sets the trigger pin to HIGH state for 10 microseconds
+	digitalWrite(triggerPin, HIGH);
+	delayMicroseconds(10);
+	digitalWrite(triggerPin, LOW);
+	pinMode(echoPin, INPUT);
 
   // Reads the echo pin, and returns the sound wave travel time in microseconds
   return 0.01723 * pulseIn(echoPin, HIGH);
