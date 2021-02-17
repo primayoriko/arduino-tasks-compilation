@@ -41,8 +41,9 @@ const float maxTemperatureThreshold = 37.0;
 
 /* Global vars */
 int distance;
-bool isOpened;
 bool isCome;
+bool isDangerTemp;
+bool isOpened;
 byte motorSpeed;
 int peopleCount;
 byte substractCount;
@@ -54,8 +55,9 @@ LiquidCrystal lcd(kPin_RS, kPin_Enable, kPin_D4,
 
 void setup() {
 	peopleCount = 0;
-	isOpened = false;
 	isCome = false;
+	isDangerTemp = false;
+	isOpened = false;
 
 	pinMode(kPin_PIR, INPUT);
 	pinMode(kPin_Motor, OUTPUT);
@@ -97,18 +99,24 @@ void loop() {
 	tempC = getTemperatureC();
 
 	/* Beep alarm temp > 37 */
-	bool isDangerTemp = tempC > maxTemperatureThreshold;
+	isDangerTemp = tempC > maxTemperatureThreshold;
 	
-	ringAlarm(isDangerTemp);
-
-	if(isOpened && isDangerTemp){
-
-		/* Close the door */
-		isOpened = false;
+	if(isDangerTemp){
 
 		writeLCD();
 
-		moveDoor(isOpened, motorSpeed);
+		ringAlarm(isDangerTemp);
+
+		if(isOpened){
+
+			/* Close the door */
+			isOpened = false;
+
+			writeLCD();
+
+			moveDoor(isOpened, motorSpeed);
+
+		}
 
 	}
 
@@ -119,11 +127,12 @@ void loop() {
 		isCome = true;
 	}
 
-	/* Person come and the door just want to be opened */
-	if(isCome && !isOpened && peopleCount < maxPeopleThreshold){
+	/* Person just came and the door going to be opened */
+	if(isCome && !isOpened && peopleCount < maxPeopleThreshold && !isDangerTemp){
 
 		/* Open the door */
 		isOpened = true;
+
 		writeLCD();
 
 		moveDoor(isOpened, motorSpeed);
@@ -168,14 +177,14 @@ void ringAlarm(bool trigger){
 			delay(35);
 		}
 
-		delay(250);
+		delay(200);
 		noTone(kPin_Speaker);
 	}
 }
 
 void moveDoor(bool moveForward, int motorSpeed){
 	/* Set time based on speed */
-	int delayTime = 250 * 125 / (motorSpeed / 2);
+	int delayTime = 300 * 125 / (motorSpeed);
 
 	/* Control door move direction */
 	if(!moveForward){

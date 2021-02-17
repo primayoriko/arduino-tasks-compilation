@@ -85,7 +85,7 @@ void loop() {
 
 void moveDoor(bool moveForward, int motorSpeed){
 	/* Set time based on speed */
-	int delayTime = 250 * 125 / (motorSpeed / 2);
+	int delayTime = 300 * 125 / (motorSpeed);
 
 	/* Control door move direction */
 	if(!moveForward){
